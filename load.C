@@ -5,7 +5,7 @@
 #include "TString.h"
 #include "TSystem.h"
 
-void loadSimple() {
+void load() {
   gSystem->SetAclicMode(TSystem::kDebug);
 
   // MnvH1D hides approximately everything, so just turn off the pages
