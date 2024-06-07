@@ -18,63 +18,59 @@
 #ifndef CVUNIVERSE_H
 #define CVUNIVERSE_H
 
-#include "PlotUtils/DefaultCVUniverse.h"
-#include "PlotUtils/ChainWrapper.h"
 #include <iostream>
 
-class CVUniverse : public PlotUtils::DefaultCVUniverse {
-  public:
-    // Constructor
-    CVUniverse(PlotUtils::ChainWrapper* chw, double nsigma=0)
-      : PlotUtils::DefaultCVUniverse(chw, nsigma)
-      {}
+#include "PlotUtils/ChainWrapper.h"
+#include "PlotUtils/MinervaUniverse.h"
 
-    // Destructor
-    virtual ~CVUniverse(){}
+class CVUniverse : public PlotUtils::MinervaUniverse {
+ public:
+#include "PlotUtils/WeightFunctions.h"
+  // Constructor
+  CVUniverse(PlotUtils::ChainWrapper* chw, double nsigma = 0)
+      : PlotUtils::MinervaUniverse(chw, nsigma) {}
 
-    // All functions we write here should be 'virtual', so that the universes
-    // that inherit from CVUniverse can override them.
+  // Destructor
+  virtual ~CVUniverse() {}
 
-    // ========================================================================
-    // Get Weight
-    //
-    // We override the various weight getting functions herein in different
-    // vertical systematic universe classes.
-    // ========================================================================
-    virtual double GetWeight() const {
-      double wgt_flux_and_cv=1., wgt_nrp=1., wgt_genie=1;
+  // All functions we write here should be 'virtual', so that the universes
+  // that inherit from CVUniverse can override them.
 
-      // flux + cv
-      //std::string playlist("minervame1a");
-      SetPlaylist("minervame1a");
-      double Enu  = GetDouble("mc_incomingE")*1e-3;
-      int nu_type = GetInt("mc_incoming");
-      wgt_flux_and_cv = GetFluxAndCVWeight(Enu, nu_type);
+  // ========================================================================
+  // Get Weight
+  //
+  // We override the various weight getting functions herein in different
+  // vertical systematic universe classes.
+  // ========================================================================
+  virtual double GetWeight() const {
+    double wgt_flux_and_cv = 1., wgt_genie = 1;
 
-      // genie
-      wgt_genie = GetGenieWeight();
+    // flux + cv
+    double Enu = GetDouble("mc_incomingE") * 1e-3;
+    int nu_type = GetInt("mc_incoming");
+    // wgt_flux_and_cv = GetFluxAndCVWeight(Enu, nu_type);
+    wgt_flux_and_cv = GetFluxAndCVWeight();
 
-      // mnvtune -- non-res pi
-      wgt_nrp = GetNonResPiWeight();
+    // genie
+    wgt_genie = GetGenieWeight();
 
-      return wgt_flux_and_cv*wgt_genie*wgt_nrp;
-    }
+    return wgt_flux_and_cv * wgt_genie;
+  }
 
-
-    // ========================================================================
-    // Get Variable Functions
-    // Write a virtual "Get" function for _any_ variable (coming directly from a
-    // branch, or composed of several branches) that will be laterally shifted
-    // or affected by the lateral shift of a systematic universe.
-    //
-    // We override some or all of these function in different systematic
-    // universe classes located in LateralSystematics.h.
-    // ========================================================================
-    virtual double GetEnu() const { return GetMuonE()+GetHadronE(); }
-    virtual double GetMuonE() const { return GetDouble("CCNuPionInc_muon_E");}
-    virtual double GetHadronE() const { return GetDouble("CCNuPionInc_hadron_recoil_CCInc");}
-
+  // ========================================================================
+  // Get Variable Functions
+  // Write a virtual "Get" function for _any_ variable (coming directly from a
+  // branch, or composed of several branches) that will be laterally shifted
+  // or affected by the lateral shift of a systematic universe.
+  //
+  // We override some or all of these function in different systematic
+  // universe classes located in LateralSystematics.h.
+  // ========================================================================
+  virtual double GetEnu() const { return GetMuonE() + GetHadronE(); }
+  virtual double GetMuonE() const { return GetDouble("CCNuPionInc_muon_E"); }
+  virtual double GetHadronE() const {
+    return GetDouble("CCNuPionInc_hadron_recoil_CCInc");
+  }
 };
-
 
 #endif

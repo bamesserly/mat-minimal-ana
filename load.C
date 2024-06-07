@@ -1,16 +1,11 @@
-#include "TString.h"
-#include "TSystem.h"
-#include "TInterpreter.h"
-#include "Cintex/Cintex.h"
-
 #include <iostream>
 
-void load()
-{
-#ifdef __CINT__
-  cout << "Run load.C+" << endl;
-  exit(1);
-#else
+#include "TInterpreter.h"
+#include "TROOT.h"
+#include "TString.h"
+#include "TSystem.h"
+
+void loadSimple() {
   gSystem->SetAclicMode(TSystem::kDebug);
 
   // MnvH1D hides approximately everything, so just turn off the pages
@@ -20,5 +15,4 @@ void load()
   TString makeSharedLib(gSystem->GetMakeSharedLib());
   makeSharedLib.ReplaceAll("-Woverloaded-virtual", "-Wno-overloaded-virtual");
   gSystem->SetMakeSharedLib(makeSharedLib);
-#endif
 }
