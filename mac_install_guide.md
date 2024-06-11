@@ -1,101 +1,67 @@
-# MAT-MINERvA Setup Guide for a Personal Mac
-Here is my experience doing a full MAT-MINERvA and periferals on my Mac m1 personal machine on 2024-06-10.
+# MAT-MINERvA Setup Guide for a Personal Unix Machine
 
-## Detailed Instructions
+- [Introduction](#introduction)
+- [Prerequisites](#prerequisites)
+- [1. Conda Environment](#conda-environment)
+- [2. MINERvA Large Files](#minerva-large-files)
+- [3. Install MAT-MINERvA](#install-mat-minerva)
+- [4. Install Tutorial](#install-tutorial)
+- [Project Directory Structure](#final-directory-structure)
 
-### 1. Install git and conda
-I use homebrew to manage all machine-wide packages. I used it to download git and conda. Not discussing those here.
+-------------------------
 
-### 2. Create and activate conda environment
+## Introduction
+Here is my experience doing a full MAT-MINERvA, periferals, and cross section tutorial install on my Mac m1 personal machine 2024-06. It takes me about 5 minutes.
+
+While this was all done on mac, I fully expect it to work as-is on linux and even on Windows, specifically with [WSL](https://learn.microsoft.com/en-us/windows/wsl/about).
+
+## Prerequisites
+git and conda. I use homebrew to manage all system-wide packages, and I used it to download git and conda.
+
+## Conda Environment
+Use conda to install root and cmake:
 ```
 conda create -n root_env
 conda activate root_env
 conda install root=6.28.12 -c conda-forge
 conda install cmake
 ```
-Can't use the latest conda version of root at the moment due to an issue with TUnfold/RooUnfold. Andrew says he has a fix for this but so far haven't tested it.
+There's an issue with the latest version of root and TUnfold, hence the slightly older version of root. This has been fixed on a MAT-MINERvA branch which I have yet to test.
 
-### 3. Get some large MINERvA data files
-You need MINERvA data files in `MParamFiles` and Flux and Reweight files.
-  A. IF you have MINERvA computing privileges you can easily download them:
-  * Get cvs. I used homebrew: `brew install cvs`.
-  * Get a kerberos ticket `kinit <my_username>`.
-  * Proceed with the next instructions. These files will get downloaded automatically.
-  B. If you DON'T have MINERvA computing, you need to get these files from a collaborator. There are two folders: `MParamFiles` and `MATFluxAndReweightFiles`. Put them both into a single folder. Consider a directory structure like this:
-```
-/Users/ben/ % tree -L 2 minerva/
-minerva
-├── minerva_large_files
-│   ├── MParamFiles
-│   └── MATFluxAndReweightFiles
-└── MATAna
-```
-Where MATAna will serve as our top working directory from here on out. I'll proceed assuming you manually downloaded the large files and they're in `minerva_large_files/`.
+## MINERvA Large Files
+MAT-MINERvA installation requires some data files for fluxes, constants, and weights, all totalling to about 2.5 G. Anything resembling a realistic analysis of MINERvA data (including our xsec tutorial) will quickly require these files. If you aren't here to do MINERvA analysis, then you should just install the [`MAT`](https://github.com/MinervaExpt/MAT), and then you won't need them.
 
-### 5. Install MAT-MINERvA:
+**For MINERvA collaborators:**
+* get a kerberos ticket
+* install `cvs` (e.g. `brew install cvs`)
+
+The needed files will be downloaded automatically in the next step
+
+**OR For Non MINERvA collaborators:**
+* You need two folders: `MParamFiles` and `MATFluxAndReweightFiles`. Get them from a collaborator.
+* Put them both into a single folder and note the location for the next step.
+
+Hopefully before 2025, these files will be publically available, along with the entire MINERvA dataset.
+
+## Install MAT-MINERvA
+**For MINERvA collaborators** (with `cvs` and a kerberos ticket):
 ```
-cd MATAna
+mkdir MATAna; cd MATAna
 git clone https://github.com/MinervaExpt/MAT-MINERvA.git
 mkdir -p opt/build && cd opt/build
-cmake ../../MAT-MINERvA/bootstrap -DCMAKE_INSTALL_PREFIX=`pwd`/.. -DCMAKE_BUILD_TYPE=Release -DFLUX_FILE_DIR=/Users/ben/minerva/minerva_large_files
+cmake ../../MAT-MINERvA/bootstrap -DCMAKE_INSTALL_PREFIX=`pwd`/.. -DCMAKE_BUILD_TYPE=Release
 make install
 source setup.sh
 cd ../..
 ```
-This downloads and installs `MAT-MINERvA`, `MAT`, and `UnfoldUtils`. Note, we've passed `minerva_large_files/` with the `-DFLUX_FILE_DIR` flag. Skip that flag if you have a kerberized fnal connection and cvs installed.
 
-### 6. Install `GENIEXSecExtract`
+**OR For Non MINERvA collaborators:**
+First set the location of your large files from the previous step:
 ```
-git clone https://github.com/MinervaExpt/GENIEXSecExtract.git
-mkdir opt/buildGENIEXSecExtract; cd opt/buildGENIEXSecExtract
-cmake ../../GENIEXSecExtract -DCMAKE_INSTALL_PREFIX=`pwd`/.. -DCMAKE_BUILD_TYPE=Release
-make install
-cd ../..
+export MINERVA_LARGE_FILES=/path/to/my/files
 ```
-This is optional. Only needed for parts of the Tutorial.
-
-### 7. Install the Cross Section Tutorial
+Then install:
 ```
-git clone https://github.com/MinervaExpt/MINERvA-101-Cross-Section.git
-mkdir opt/buildTutorial; cd opt/buildTutorial
-cmake ../../MINERvA-101-Cross-Section -DCMAKE_INSTALL_PREFIX=`pwd`/.. -DCMAKE_BUILD_TYPE=Release
-make install
-cd ../..
-```
-
-Here's my final directory structure now:
-```
-Projects % tree -L 1 MATAna
-MATAna
-├── GENIEXSecExtract
-├── MAT
-├── MAT-MINERvA
-├── MINERvA-101-Cross-Section
-├── UnfoldUtils
-└── opt
-```
-
-Test that the cross section tutorial works with `runEventLoop --help`.
-
-### 8. (Optional) Setup and run my bare bones minimal mat event loop example
-```
-https://github.com/bamesserly/mat-minimal-ana.git
-scp -r <my_username>@minervagpvm01.fnal.gov:/pnfs/minerva/persistent/users/bmesserl/pions/20190824/merged/mc/ME1A/CCNuPionInc_mc_AnaTuple_run00110000_Playlist.root .
-echo $PWD/CCNuPionInc_mc_AnaTuple_run00110000_Playlist.root > playlist.txt
-```
-and run my the event loop:
-`root -l -b load.C+ runEventLoop.C+`
-
-## Feeling lucky?
-Here's all the setup in one code block. Make sure you have `conda` and `git`. If you're a MINERvA collaborator, get a kerberos ticket and `cvs`. If you're not a collaborator, place your manually-downloaded `MParamFiles` and `MATFluxAndReweightFiles` in a `minerva_large_files` and set it to `export MINERVA_LARGE_FILES`.
-```
-# conda environment
-conda create -n root_env
-conda activate root_env
-conda install root=6.28.12 -c conda-forge
-conda install cmake
-
-# MAT-MINERvA + Peripherals
 mkdir MATAna; cd MATAna
 git clone https://github.com/MinervaExpt/MAT-MINERvA.git
 mkdir -p opt/build && cd opt/build
@@ -103,23 +69,52 @@ cmake ../../MAT-MINERvA/bootstrap -DCMAKE_INSTALL_PREFIX=`pwd`/.. -DCMAKE_BUILD_
 make install
 source setup.sh
 cd ../..
+```
+This downloads and installs `MAT-MINERvA`, `MAT`, and `UnfoldUtils`.
 
-# GENIEXSecExtract
+## Install Tutorial
+```
 git clone https://github.com/MinervaExpt/GENIEXSecExtract.git
 mkdir opt/buildGENIEXSecExtract; cd opt/buildGENIEXSecExtract
 cmake ../../GENIEXSecExtract -DCMAKE_INSTALL_PREFIX=`pwd`/.. -DCMAKE_BUILD_TYPE=Release
 make install
 cd ../..
 
-# XSec Tutorial
 git clone https://github.com/MinervaExpt/MINERvA-101-Cross-Section.git
 mkdir opt/buildTutorial; cd opt/buildTutorial
 cmake ../../MINERvA-101-Cross-Section -DCMAKE_INSTALL_PREFIX=`pwd`/.. -DCMAKE_BUILD_TYPE=Release
 make install
 cd ../..
+```
 
-# MAT Bare Bones Example (kerberos required)
+Test that the cross section tutorial works with `runEventLoop --help`.
+
+And you may want my bare-bones example that focuses more on the core features of the MAT (and less on MAT-MINERvA):
+```
 https://github.com/bamesserly/mat-minimal-ana.git
 scp -r <my_username>@minervagpvm01.fnal.gov:/pnfs/minerva/persistent/users/bmesserl/pions/20190824/merged/mc/ME1A/CCNuPionInc_mc_AnaTuple_run00110000_Playlist.root .
 echo $PWD/CCNuPionInc_mc_AnaTuple_run00110000_Playlist.root > playlist.txt
+```
+and run the event loop:
+```
+root -l -b load.C+ runEventLoop.C+
+```
+Note that the last two lines involve a download from the MINERvA gpvms. Look forward to the day when MINERvA data is public.
+
+## Final directory structure:
+Here's my final directory structure now:
+```
+/Users/ben/ % tree -L 2 minerva/
+minerva
+├── minerva_large_files
+│   ├── MParamFiles
+│   └── MATFluxAndReweightFiles
+└── MATAna
+    ├── GENIEXSecExtract
+    ├── MAT
+    ├── MAT-MINERvA
+    ├── MINERvA-101-Cross-Section
+    ├── UnfoldUtils
+    ├── mat-minimal-ana
+    └── opt
 ```
