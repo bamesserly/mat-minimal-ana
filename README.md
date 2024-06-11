@@ -1,8 +1,11 @@
+# Minimal MAT-MINERvA Example
+
 This is my original (extremely bare bones) prototype/example of a MAT-MINERvA
 analysis.
 
-This example highlights an root file event loop and histogram filling with
-systematics, using all of the essential awesome features of the MAT.
+This example highlights a root file entry loop and histogram-filling with
+"many-universe" systematics, using all of the essential awesome features of the
+MAT.
 
 Currently, to get this running, you basically need to be a MINERvA
 collaborator; MAT-MINERvA is required beyond the publically-available MAT, and
@@ -20,9 +23,9 @@ runEventLoop.C
 * Creates a HistWrapper (like an MnvHXD) object for Enu out of a couple sample
   systematics
 * Loops over ChainWrapper entries
-* * Loops over systematics
-* * * Check if universe passes cuts
-* * * * fill Histwrapper's histograms
+    * Loops over systematics
+        * Check if universe passes cuts
+            * fill Histwrapper's histograms
 * plot a bunch of stuff
 
 To run: `root -l -b load.C+ runEventLoop.C+`
