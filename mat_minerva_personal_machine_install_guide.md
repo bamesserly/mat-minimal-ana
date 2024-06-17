@@ -56,12 +56,9 @@ cd ../..
 ```
 
 **OR For Non MINERvA collaborators:**
-First set the location of your large files from the previous step:
+First set the location of your large files from the previous step, then install:
 ```
 export MINERVA_LARGE_FILES=/path/to/my/files
-```
-Then install:
-```
 mkdir MATAna; cd MATAna
 git clone https://github.com/MinervaExpt/MAT-MINERvA.git
 mkdir -p opt/build && cd opt/build
